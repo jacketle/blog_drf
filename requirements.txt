@@ -1,0 +1,13 @@
+Django>=4.2.23
+mysqlclient
+Pillow
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+drf-yasg
+django-filter
+django-redis
+markdown
+beautifulsoup4
+simpleui
+python-dotenv
