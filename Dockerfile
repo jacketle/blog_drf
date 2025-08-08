@@ -4,6 +4,14 @@ FROM python:3.9
 # 设置工作目录
 WORKDIR /app
 
+# 安装系统依赖（特别是mysqlclient需要的依赖）
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        default-libmysqlclient-dev \
+        build-essential \
+        pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 # 复制项目依赖文件到工作目录
 COPY requirements.txt /app/
 
