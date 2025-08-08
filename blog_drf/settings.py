@@ -59,7 +59,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # 添加这一行
     'django.middleware.common.CommonMiddleware',
-    # 👇 添加 CorsMiddleware 在 CommonMiddleware 之后
+    # 添加 CorsMiddleware 在 CommonMiddleware 之后
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
