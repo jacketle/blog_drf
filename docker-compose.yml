@@ -8,10 +8,17 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_HOST: "%"  # 添加这一行
     volumes:
       - db_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -23,15 +30,26 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - DEBUG=0
+      # 添加以下环境变量，确保数据库连接信息能传递给Django应用
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - REDIS_URL=${REDIS_URL}
+      - SECRET_KEY=${SECRET_KEY}
     volumes:
       - .:/app
+      - ./staticfiles:/app/staticfiles
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py loaddata initial_data.json &&
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
              gunicorn blog_drf.wsgi:application --bind 0.0.0.0:8000"
 
 volumes:

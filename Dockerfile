@@ -12,20 +12,17 @@ RUN apt-get update \
         pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制项目依赖文件到工作目录
-COPY requirements.txt /app/
+# 复制项目代码到工作目录（包括README.md）
+COPY . /app/
 
 # 安装项目依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 复制项目代码到工作目录
-COPY . /app/
-
 # 暴露Django应用的端口
 EXPOSE 8000
 
-# 收集静态文件
-RUN python manage.py collectstatic --noinput
+# 创建一个启动脚本，用于在容器启动时收集静态文件并启动应用
+RUN echo '#!/bin/bash\npython manage.py collectstatic --noinput\ngunicorn --bind 0.0.0.0:8000 blog_drf.wsgi:application' > start.sh && chmod +x start.sh
 
 # 启动应用
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "blog_drf.wsgi:application"]
+CMD ["./start.sh"]

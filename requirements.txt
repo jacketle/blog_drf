@@ -9,5 +9,7 @@ django-filter
 django-redis
 markdown
 beautifulsoup4
-simpleui
+django-simpleui
 python-dotenv
+gunicorn
+whitenoise
