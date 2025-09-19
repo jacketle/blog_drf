@@ -29,7 +29,7 @@ DEBUG = True
 
 
 # 设置允许的主机
-ALLOWED_HOSTS = ['180.184.51.116', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [ '180.184.51.116', 'localhost', '127.0.0.1'] #要加上自己网站的ip
 
 # 自定义用户模型
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -184,7 +184,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8080',  # 允许Vue前端访问
+    '180.184.51.116', #允许180.184.51.116的Vue前端访问
+    'http://localhost:8080',  # 允许前端Vue前端访问
     'http://localhost:5173',  # 添加这一行以支持当前前端
 ]
 
