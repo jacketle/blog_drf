@@ -1,0 +1,40 @@
+{% extends "admin/index.html" %}
+
+{% block sidebar %}
+{{ block.super }}
+<style>
+    #analytics-menu {
+        margin-top: 20px;
+    }
+    #analytics-menu h3 {
+        font-size: 14px;
+        padding: 10px 15px;
+        margin: 0;
+        background: #f8f8f8;
+        border-bottom: 1px solid #ddd;
+    }
+    #analytics-menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    #analytics-menu li {
+        border-bottom: 1px solid #eee;
+    }
+    #analytics-menu a {
+        display: block;
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #333;
+    }
+    #analytics-menu a:hover {
+        background: #eaeaea;
+    }
+</style>
+<div id="analytics-menu">
+    <h3>数据分析</h3>
+    <ul>
+        <li><a href="{% url 'admin:users_visitorrecord_analytics' %}">访问统计</a></li>
+    </ul>
+</div>
+{% endblock %}

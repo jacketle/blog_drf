@@ -4,7 +4,7 @@ from .models import Post
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'cover_image_thumbnail', 'author', 'is_published', 'created_at')  # 添加封面图列
+    list_display = ('title', 'cover_image_thumbnail', 'author', 'is_published','click_count', 'created_at')  # 添加封面图列
     list_filter = ('is_published', 'created_at', 'author', 'category')  # 添加分区筛选
     search_fields = ('title', 'content')
     prepopulated_fields = {'slug': ('title',)}

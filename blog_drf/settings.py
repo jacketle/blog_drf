@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 
@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'users.middleware.VisitorTrackingMiddleware',  # 添加访客记录中间件
 ]
 
 ROOT_URLCONF = 'blog_drf.urls'
@@ -114,7 +115,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ.get('DB_NAME', 'blog_drf'),
         'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '123456'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
@@ -186,7 +187,26 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8080',  # 允许Vue前端访问
     'http://localhost:5173',  # 添加这一行以支持当前前端
 ]
+
 # SimpleUI 配置
 SIMPLEUI_HOME_INFO = False  # 隐藏版本信息卡片
 SIMPLEUI_HOME_ACTION = False  # 隐藏操作按钮
 SIMPLEUI_ANALYSIS = False  # 禁用数据分析
+
+# 添加自定义菜单配置
+SIMPLEUI_CONFIG = {
+    'system_keep': True,  # 保留系统默认菜单
+    'menus': [
+        {
+            'name': '数据分析',
+            'icon': 'fas fa-chart-bar',
+            'models': [
+                {
+                    'name': '访问统计',
+                    'icon': 'fas fa-chart-line',
+                    'url': 'users/visitorrecord/analytics/'
+                }
+            ]
+        }
+    ]
+}

@@ -65,7 +65,13 @@ class PostDetailView(generics.RetrieveAPIView):
         responses={200: PostDetailSerializer}
     )
     def get(self, request, *args, **kwargs):
-        """处理GET请求，返回帖子详情"""
+        """处理GET请求，返回帖子详情，并自动增加点击数"""
+        # 获取帖子对象
+        post = self.get_object()
+        # 增加点击数
+        post.click_count += 1
+        post.save(update_fields=['click_count'])
+        # 继续原来的逻辑返回帖子详情
         return super().get(request, *args, **kwargs)
     
     def get_queryset(self):
@@ -188,53 +194,3 @@ class PostPreviewView(generics.RetrieveAPIView):
             return queryset
         return queryset.filter(author=user)
 
-class PostClickView(generics.GenericAPIView):
-    """增加帖子点击数视图"""
-    permission_classes = (permissions.AllowAny,)
-    queryset = Post.objects.all()
-    lookup_field = 'slug'
-    serializer_class = PostDetailSerializer  # 添加这一行
-    
-    @swagger_auto_schema(
-        operation_summary="增加帖子点击数",
-        operation_description="增加指定slug的帖子点击数",
-        responses={200: '点击数增加成功'}
-    )
-    def post(self, request, *args, **kwargs):
-        """处理POST请求，增加帖子点击数"""
-        post = self.get_object()
-        post.click_count += 1
-        post.save(update_fields=['click_count'])
-        return Response({'message': '点击数增加成功', 'click_count': post.click_count}, status=status.HTTP_200_OK)
-    """增加帖子点击数视图"""
-    permission_classes = (permissions.AllowAny,)
-    queryset = Post.objects.all()
-    lookup_field = 'slug'
-    
-    @swagger_auto_schema(
-        operation_summary="增加帖子点击数",
-        operation_description="增加指定slug的帖子点击数",
-        responses={200: '点击数增加成功'}
-    )
-    def post(self, request, *args, **kwargs):
-        """处理POST请求，增加帖子点击数"""
-        post = self.get_object()
-        post.click_count += 1
-        post.save(update_fields=['click_count'])
-        return Response({'message': '点击数增加成功', 'click_count': post.click_count}, status=status.HTTP_200_OK)
-    """增加帖子点击数视图"""
-    permission_classes = (permissions.AllowAny,)
-    queryset = Post.objects.all()
-    lookup_field = 'slug'
-    
-    @swagger_auto_schema(
-        operation_summary="增加帖子点击数",
-        operation_description="增加指定slug的帖子点击数",
-        responses={200: '点击数增加成功'}
-    )
-    def post(self, request, *args, **kwargs):
-        """处理POST请求，增加帖子点击数"""
-        post = self.get_object()
-        post.click_count += 1
-        post.save(update_fields=['click_count'])
-        return Response({'message': '点击数增加成功', 'click_count': post.click_count}, status=status.HTTP_200_OK)

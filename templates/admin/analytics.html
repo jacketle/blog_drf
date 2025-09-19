@@ -1,0 +1,295 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}数据分析{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<!-- ECharts库 -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+<style>
+    .chart-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin: 20px 0;
+    }
+    .chart-box {
+        flex: 1;
+        min-width: 500px;
+        min-height: 400px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        box-sizing: border-box;
+        position: relative;
+    }
+    .loading {
+        text-align: center;
+        padding: 100px 0;
+        color: #666;
+    }
+    .error {
+        color: red;
+        text-align: center;
+        padding: 100px 0;
+    }
+    .axis-label {
+        font-size: 12px;
+        color: #666;
+        font-style: italic;
+    }
+    @media (max-width: 768px) {
+        .chart-box {
+            min-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">首页</a>
+    &rsaquo; 数据分析
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="chart-container">
+    <div class="chart-box">
+        <h2>每日访问量</h2>
+        <div id="daily-visits-chart" class="chart-content" style="width:100%;min-height:350px;"></div>
+    </div>
+    <div class="chart-box">
+        <h2>帖子访问排行</h2>
+        <div id="post-rankings-chart" class="chart-content" style="width:100%;min-height:350px;"></div>
+    </div>
+</div>
+
+<script>
+    // 初始化每日访问量图表
+    function initDailyVisitsChart() {
+        const chartDom = document.getElementById('daily-visits-chart');
+        console.log('初始化每日访问量图表，DOM元素:', chartDom);
+        
+        // 检查DOM元素是否存在
+        if (!chartDom) {
+            console.error('无法找到每日访问量图表的DOM元素');
+            return;
+        }
+        
+        const myChart = echarts.init(chartDom);
+        console.log('ECharts实例创建成功');
+        
+        // 显示加载动画
+        myChart.showLoading();
+        
+        // 获取数据
+        fetch("{% url 'admin:users_visitorrecord_daily_visits_data' %}")
+            .then(response => {
+                console.log('每日访问量API响应:', response);
+                if (!response.ok) {
+                    throw new Error('网络响应错误: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('每日访问量数据:', data);
+                // 隐藏加载动画
+                myChart.hideLoading();
+                
+                // 检查数据是否为空
+                if (!data.dates || !data.counts || data.dates.length === 0) {
+                    chartDom.innerHTML = '<div class="error">暂无数据</div>';
+                    return;
+                }
+                
+                // 配置图表选项
+                const option = {
+                    title: {
+                        text: '每日访问量',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        name: '日期 ',
+                        nameLocation: 'middle',
+                        nameGap: 30,
+                        data: data.dates
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '访问量',
+                        nameLocation: 'middle',
+                        nameGap: 50,
+                        nameRotate: 90
+                    },
+                    series: [{
+                        data: data.counts,
+                        type: 'line',
+                        smooth: true,
+                        areaStyle: {},
+                        emphasis: {
+                            focus: 'series'
+                        }
+                    }]
+                };
+                
+                console.log('图表配置:', option);
+                // 渲染图表
+                myChart.setOption(option, true);
+                console.log('图表渲染完成');
+                
+                // 监听窗口大小变化，自适应图表
+                window.addEventListener('resize', () => {
+                    myChart.resize();
+                });
+            })
+            .catch(error => {
+                console.error('获取每日访问量数据失败:', error);
+                myChart.hideLoading();
+                chartDom.innerHTML = '<div class="error">数据加载失败: ' + error.message + '</div>';
+            });
+    }
+    
+    // 初始化帖子访问排行图表
+    function initPostRankingsChart() {
+        const chartDom = document.getElementById('post-rankings-chart');
+        console.log('初始化帖子访问排行图表，DOM元素:', chartDom);
+        
+        // 检查DOM元素是否存在
+        if (!chartDom) {
+            console.error('无法找到帖子访问排行图表的DOM元素');
+            return;
+        }
+        
+        const myChart = echarts.init(chartDom);
+        console.log('ECharts实例创建成功');
+        
+        // 显示加载动画
+        myChart.showLoading();
+        
+        // 获取数据
+        fetch("{% url 'admin:users_visitorrecord_post_rankings_data' %}")
+            .then(response => {
+                console.log('帖子访问排行API响应:', response);
+                if (!response.ok) {
+                    throw new Error('网络响应错误: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('帖子访问排行数据:', data);
+                // 隐藏加载动画
+                myChart.hideLoading();
+                
+                // 检查数据是否为空
+                if (!data.paths || !data.counts || data.paths.length === 0) {
+                    chartDom.innerHTML = '<div class="error">暂无数据</div>';
+                    return;
+                }
+                
+                // 使用标题而不是路径作为标签（如果提供了标题）
+                let labels;
+                if (data.titles && data.titles.length > 0) {
+                    labels = data.titles;
+                } else {
+                    // 处理路径，只显示路径的最后一部分作为标签
+                    labels = data.paths.map(path => {
+                        // 如果是API路径，提取有意义的部分
+                        if (path.includes('/api/posts/')) {
+                            const parts = path.split('/').filter(part => part !== '');
+                            // 找到posts后的部分
+                            const postsIndex = parts.indexOf('posts');
+                            if (postsIndex !== -1 && postsIndex + 1 < parts.length) {
+                                return parts[postsIndex + 1];
+                            }
+                            return '列表页';
+                        }
+                        // 对于其他路径，取最后部分
+                        const parts = path.split('/').filter(part => part !== '');
+                        return parts.length > 0 ? parts[parts.length - 1] : path;
+                    });
+                }
+                
+                console.log('处理后的标签:', labels);
+                
+                // 配置图表选项
+                const option = {
+                    title: {
+                        text: '帖子访问排行',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        name: '帖子标题',
+                        nameLocation: 'middle',
+                        nameGap: 30,
+                        data: labels,
+                        axisLabel: {
+                            rotate: 45,
+                            interval: 0
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '访问次数',
+                        nameLocation: 'middle',
+                        nameGap: 50,
+                        nameRotate: 90
+                    },
+                    series: [{
+                        data: data.counts,
+                        type: 'bar',
+                        emphasis: {
+                            focus: 'series'
+                        }
+                    }],
+                    grid: {
+                        bottom: 80
+                    }
+                };
+                
+                console.log('图表配置:', option);
+                // 渲染图表
+                myChart.setOption(option, true);
+                console.log('图表渲染完成');
+                
+                // 监听窗口大小变化，自适应图表
+                window.addEventListener('resize', () => {
+                    myChart.resize();
+                });
+            })
+            .catch(error => {
+                console.error('获取帖子访问排行数据失败:', error);
+                myChart.hideLoading();
+                chartDom.innerHTML = '<div class="error">数据加载失败: ' + error.message + '</div>';
+            });
+    }
+    
+    // 页面加载完成后初始化图表
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM加载完成，开始初始化图表');
+        // 确保DOM完全加载后再初始化
+        setTimeout(function() {
+            console.log('开始初始化图表');
+            initDailyVisitsChart();
+            initPostRankingsChart();
+        }, 100);
+    });
+    
+    // 如果DOMContentLoaded事件没有触发，使用window.onload作为备选
+    window.addEventListener('load', function() {
+        console.log('页面加载完成');
+    });
+</script>
+{% endblock %}

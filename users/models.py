@@ -30,3 +30,36 @@ class CustomUser(AbstractUser):
             all_tags.extend(post.get_tags())
         # 返回不重复标签的数量
         return len(set(all_tags))
+
+class VisitorRecord(models.Model):
+    """访客记录模型"""
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="用户",
+        related_name="visitor_records"
+    )  # 关联用户，允许为空
+    ip_address = models.GenericIPAddressField(verbose_name="IP地址")
+    user_agent = models.TextField(verbose_name="用户代理", blank=True, null=True)
+    referer = models.URLField(verbose_name="来源页面", blank=True, null=True)
+    path = models.CharField(max_length=500, verbose_name="访问路径")
+    method = models.CharField(max_length=10, verbose_name="请求方法")
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="访问时间")
+    session_key = models.CharField(max_length=40, verbose_name="会话ID", blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "访客记录"
+        verbose_name_plural = "访客记录"
+        ordering = ['-timestamp']
+        
+    def __str__(self):
+        if self.user:
+            return f"{self.user.username} - {self.path} ({self.timestamp})"
+        return f"{self.ip_address} - {self.path} ({self.timestamp})"
+        
+    @property
+    def is_authenticated_user(self):
+        """判断是否为已登录用户"""
+        return self.user is not None

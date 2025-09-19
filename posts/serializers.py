@@ -13,7 +13,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ('id', 'username', 'nickname', 'bio', 'post_count', 'tag_count', 'avatar_url')
+        fields = ('id', 'username', 'nickname', 'bio', 'post_count', 'tag_count', 'avatar_url', 'is_station_master')
     
     def get_post_count(self, obj):
         """获取用户发布的文章数量"""
